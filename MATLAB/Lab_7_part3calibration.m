@@ -1,6 +1,6 @@
 % Depth and voltage data
-depth = 0:0.05:0.4; 
-voltage = [1.07, 1.13, 1.20, 1.25, 1.32, 1.38, 1.45, 1.51, 1.57]; 
+depth = [1.07, 1.13, 1.20, 1.25, 1.32, 1.38, 1.45, 1.51, 1.57];
+voltage = 0:0.05:0.4;
 
 
 confLev = 0.95; % The confidence level
