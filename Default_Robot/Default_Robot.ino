@@ -17,23 +17,25 @@ Authors:
 #include <SensorGPS.h>
 #include <SensorIMU.h>
 #include <XYStateEstimator.h>
+#include <ZStateEstimator.h>
 #include <ADCSampler.h>
 #include <ErrorFlagSampler.h>
 #include <ButtonSampler.h> // A template of a data source library
 #include <MotorDriver.h>
 #include <Logger.h>
 #include <Printer.h>
-#include <SurfaceControl.h>
+#include <DepthControl.h>
 #define UartSerial Serial1
-#define DELAY 0
+#define DELAY 2000
 #include <GPSLockLED.h>
 #include <BurstADCSampler.h>
 
 /////////////////////////* Global Variables *////////////////////////
 
 MotorDriver motor_driver;
-XYStateEstimator state_estimator;
-SurfaceControl surface_control;
+XYStateEstimator xy_state_estimator;
+ZStateEstimator z_state_estimator;
+DepthControl depth_control;
 SensorGPS gps;
 Adafruit_GPS GPS(&UartSerial);
 ADCSampler adc;
@@ -48,13 +50,7 @@ BurstADCSampler burst_adc;
 // loop start recorder
 int loopStartTime;
 int currentTime;
-int current_way_point = 0;
 volatile bool EF_States[NUM_FLAGS] = {1,1,1};
-
-// GPS Waypoints
-const int number_of_waypoints = 2;
-const int waypoint_dimensions = 2;       // waypoints are set to have two pieces of information, x then y.
-double waypoints [] = { 0, 10, 0, 0 };   // listed as x0,y0,x1,y1, ... etc.
 
 ////////////////////////* Setup *////////////////////////////////
 
@@ -62,8 +58,9 @@ void setup() {
   
   logger.include(&imu);
   logger.include(&gps);
-  logger.include(&state_estimator);
-  logger.include(&surface_control);
+  logger.include(&xy_state_estimator);
+  logger.include(&z_state_estimator);
+  logger.include(&depth_control);
   logger.include(&motor_driver);
   logger.include(&adc);
   logger.include(&ef);
@@ -81,22 +78,26 @@ void setup() {
   motor_driver.init();
   led.init();
 
-  surface_control.init(number_of_waypoints, waypoints, DELAY);
+  const int num_depth_waypoints = 11;
+  double depth_waypoints [] = { 0.25, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5};  // listed as z0,z1,... etc.
+  depth_control.init(num_depth_waypoints, depth_waypoints, DELAY);
   
-  state_estimator.init(); 
+  xy_state_estimator.init(); 
+  z_state_estimator.init();
 
   printer.printMessage("Starting main loop",10);
   loopStartTime = millis();
-  printer.lastExecutionTime         = loopStartTime - LOOP_PERIOD + PRINTER_LOOP_OFFSET ;
-  imu.lastExecutionTime             = loopStartTime - LOOP_PERIOD + IMU_LOOP_OFFSET;
-  gps.lastExecutionTime             = loopStartTime - LOOP_PERIOD + GPS_LOOP_OFFSET;
-  adc.lastExecutionTime             = loopStartTime - LOOP_PERIOD + ADC_LOOP_OFFSET;
-  ef.lastExecutionTime              = loopStartTime - LOOP_PERIOD + ERROR_FLAG_LOOP_OFFSET;
-  button_sampler.lastExecutionTime  = loopStartTime - LOOP_PERIOD + BUTTON_LOOP_OFFSET;
-  state_estimator.lastExecutionTime = loopStartTime - LOOP_PERIOD + XY_STATE_ESTIMATOR_LOOP_OFFSET;
-  surface_control.lastExecutionTime = loopStartTime - LOOP_PERIOD + SURFACE_CONTROL_LOOP_OFFSET;
-  logger.lastExecutionTime          = loopStartTime - LOOP_PERIOD + LOGGER_LOOP_OFFSET;
-  burst_adc.lastExecutionTime       = loopStartTime;
+  printer.lastExecutionTime            = loopStartTime - LOOP_PERIOD + PRINTER_LOOP_OFFSET ;
+  imu.lastExecutionTime                = loopStartTime - LOOP_PERIOD + IMU_LOOP_OFFSET;
+  gps.lastExecutionTime                = loopStartTime - LOOP_PERIOD + GPS_LOOP_OFFSET;
+  adc.lastExecutionTime                = loopStartTime - LOOP_PERIOD + ADC_LOOP_OFFSET;
+  ef.lastExecutionTime                 = loopStartTime - LOOP_PERIOD + ERROR_FLAG_LOOP_OFFSET;
+  button_sampler.lastExecutionTime     = loopStartTime - LOOP_PERIOD + BUTTON_LOOP_OFFSET;
+  xy_state_estimator.lastExecutionTime = loopStartTime - LOOP_PERIOD + XY_STATE_ESTIMATOR_LOOP_OFFSET;
+  z_state_estimator.lastExecutionTime  = loopStartTime - LOOP_PERIOD + Z_STATE_ESTIMATOR_LOOP_OFFSET;
+  depth_control.lastExecutionTime      = loopStartTime - LOOP_PERIOD + SURFACE_CONTROL_LOOP_OFFSET;
+  logger.lastExecutionTime             = loopStartTime - LOOP_PERIOD + LOGGER_LOOP_OFFSET;
+  burst_adc.lastExecutionTime          = loopStartTime;
 }
 
 
@@ -112,19 +113,37 @@ void loop() {
     printer.printValue(1,ef.printStates());
     printer.printValue(2,logger.printState());
     printer.printValue(3,gps.printState());   
-    printer.printValue(4,state_estimator.printState());     
-    printer.printValue(5,surface_control.printWaypointUpdate());
-    printer.printValue(6,surface_control.printString());
+    printer.printValue(4,xy_state_estimator.printState());  
+    printer.printValue(5,z_state_estimator.printState());      printer.printValue(5,depth_control.printWaypointUpdate());
+    printer.printValue(6,depth_control.printString());
     printer.printValue(7,motor_driver.printState());
     printer.printValue(8,imu.printRollPitchHeading());        
     printer.printValue(9,imu.printAccels());
     printer.printToSerial();  // To stop printing, just comment this line out
   }
 
-  if ( currentTime-surface_control.lastExecutionTime > LOOP_PERIOD ) {
-    surface_control.lastExecutionTime = currentTime;
-    surface_control.navigate(&state_estimator.state, &gps.state, DELAY);
-    motor_driver.drive(surface_control.uL,surface_control.uR,0);
+  if ( currentTime-depth_control.lastExecutionTime > LOOP_PERIOD ) {
+    depth_control.lastExecutionTime = currentTime;
+    if ( depth_control.diveState ) {      // DIVE STATE //
+      depth_control.complete = false;
+      if ( !depth_control.atDepth ) {
+        depth_control.dive(&z_state_estimator.state, currentTime);
+      }
+      else {
+        depth_control.diveState = false; 
+        depth_control.surfaceState = true;
+      }
+      motor_driver.drive(0,0,depth_control.uV);
+    }
+    if ( depth_control.surfaceState ) {     // SURFACE STATE //
+      if ( !depth_control.atSurface ) { 
+        depth_control.surface(&z_state_estimator.state);
+      }
+      else if ( depth_control.complete ) { 
+        delete[] depth_control.wayPoints;   // destroy depth waypoint array from the Heap
+      }
+      motor_driver.drive(0,0,depth_control.uV);
+    }
   }
 
   if ( currentTime-adc.lastExecutionTime > LOOP_PERIOD ) {
@@ -160,9 +179,14 @@ void loop() {
  
   gps.read(&GPS); // blocking UART calls, need to check for UART every cycle
 
-  if ( currentTime-state_estimator.lastExecutionTime > LOOP_PERIOD ) {
-    state_estimator.lastExecutionTime = currentTime;
-    state_estimator.updateState(&imu.state, &gps.state);
+  if ( currentTime-xy_state_estimator.lastExecutionTime > LOOP_PERIOD ) {
+    xy_state_estimator.lastExecutionTime = currentTime;
+    xy_state_estimator.updateState(&imu.state, &gps.state);
+  }
+
+  if ( currentTime-z_state_estimator.lastExecutionTime > LOOP_PERIOD ) {
+    z_state_estimator.lastExecutionTime = currentTime;
+    z_state_estimator.updateState(analogRead(PRESSURE_PIN));
   }
   
   if ( currentTime-led.lastExecutionTime > LOOP_PERIOD ) {
