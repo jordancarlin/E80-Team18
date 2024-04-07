@@ -1,6 +1,6 @@
 %#ok<*NOPTS>
 % voltage and depth data
-voltage = [1.07, 1.13, 1.20, 1.25, 1.32, 1.38, 1.45, 1.51, 1.57];
+voltage = [2.65, 2.63, 2.61, 2.6, 2.58, 2.56, 2.55, 2.53, 2.51];
 depth = 0:0.05:0.4;
 
 
@@ -48,7 +48,7 @@ end
 legend('Data Points','Best Fit Line','Upper Func. Bound',...
     'Lower Func. Bound', 'Upper Obs. Bound', 'Lower Obs. Bound',...
     'Location', location)
-print("lab 7 section 3.1.png", "-dpng");
+print("Pressure Calibration.png", "-dpng");
 hold off
 
 slope = beta1
