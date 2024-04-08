@@ -32,7 +32,7 @@ String ADCSampler::printSample(void)
   String printString = "ADC:";
   for (int i=0; i<NUM_PINS; i++) {
     printString += " ";
-    printString += String(sample[i]);
+    printString += String(sample[i]*(3.3/1023));
   }
   return printString;
 }
