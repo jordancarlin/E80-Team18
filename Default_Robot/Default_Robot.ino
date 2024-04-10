@@ -26,7 +26,7 @@ Authors:
 #include <Printer.h>
 #include <DepthControl.h>
 #define UartSerial Serial1
-#define DELAY 2000
+#define DELAY 5000 // ms
 #include <GPSLockLED.h>
 #include <BurstADCSampler.h>
 
@@ -55,7 +55,7 @@ volatile bool EF_States[NUM_FLAGS] = {1,1,1};
 ////////////////////////* Setup *////////////////////////////////
 
 void setup() {
-  
+  delay(60000);
   logger.include(&imu);
   logger.include(&gps);
   logger.include(&xy_state_estimator);
@@ -78,8 +78,8 @@ void setup() {
   motor_driver.init();
   led.init();
 
-  const int num_depth_waypoints = 11;
-  double depth_waypoints [] = { 0.25, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5};  // listed as z0,z1,... etc.
+  const int num_depth_waypoints = 6;
+  double depth_waypoints [] = { 0.25, 0.5, 0.75, 1, 1.5, 2};  // listed as z0,z1,... etc.
   depth_control.init(num_depth_waypoints, depth_waypoints, DELAY);
   
   xy_state_estimator.init(); 

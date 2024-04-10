@@ -117,56 +117,56 @@ title("Voltage vs Depth", FontSize=20);
 %     fontsize=12);
 axis tight
 
-%% Convert voltages to currents
-IRPhotoCurrent = IRPhotoVoltage/IRPhotoResistance;
-yellowCurrent = yellowVoltage/yellowResistance;
-greenCurrent = greenVoltage/greenResistance;
-visibleCurrent = visibleVoltage/visibleResistance;
-IRLEDCurrent = IRLEDVoltage/IRLEDResistance;
-redCurrent = redVoltage/redResistance;
-
-%% Plot currents
-subplot(3,1,2);
-hold on
-plot(z, redCurrent, "r*-", LineWidth=1)
-plot(z, yellowCurrent, Marker="*", Color="#EDB120", LineWidth=1)
-plot(z, greenCurrent, "g*-", LineWidth=1)
-plot(z, visibleCurrent, "b*-", LineWidth=1)
-plot(z, IRLEDCurrent, "c*-", LineWidth=1)
-plot(z, IRPhotoCurrent, "m*-", LineWidth=1)
-hold off
-xlabel("Depth [m]", FontSize=16);
-ylabel("Current [A]", FontSize=16);
-title("Current vs Depth", FontSize=20);
-% legend("Red LED Current", "Yellow LED Current", "Green LED Current", ...
-%     "Visible Photodiode Current", "IR LED Current", "IR Photodiode Current", ...
-%     fontsize=12);
-axis tight
-
-%% Normalize currents
-IRPhotoCurrentNorm = IRPhotoCurrent/max(IRPhotoCurrent);
-yellowCurrentNorm = yellowCurrent/max(yellowCurrent);
-greenCurrentNorm = greenCurrent/max(greenCurrent);
-visibleCurrentNorm = visibleCurrent/max(visibleCurrent);
-IRLEDCurrentNorm = IRLEDCurrent/max(IRLEDCurrent);
-redCurrentNorm = redCurrent/max(redCurrent);
-
-%% Plot normalized currents
-subplot(3,1,3);
-hold on
-plot(z, redCurrentNorm, "r*-", LineWidth=1)
-plot(z, yellowCurrentNorm, Marker="*", Color="#EDB120", LineWidth=1)
-plot(z, greenCurrentNorm, "g*-", LineWidth=1)
-plot(z, visibleCurrentNorm, "b*-", LineWidth=1)
-plot(z, IRLEDCurrentNorm, "c*-", LineWidth=1)
-plot(z, IRPhotoCurrentNorm, "m*-", LineWidth=1)
-hold off
-xlabel("Depth [m]", FontSize=16);
-ylabel("Normalized Current Relative to Max", FontSize=16);
-title("Normalized Current vs Depth", FontSize=20);
+% %% Convert voltages to currents
+% IRPhotoCurrent = IRPhotoVoltage/IRPhotoResistance;
+% yellowCurrent = yellowVoltage/yellowResistance;
+% greenCurrent = greenVoltage/greenResistance;
+% visibleCurrent = visibleVoltage/visibleResistance;
+% IRLEDCurrent = IRLEDVoltage/IRLEDResistance;
+% redCurrent = redVoltage/redResistance;
+% 
+% %% Plot currents
+% subplot(3,1,2);
+% hold on
+% plot(z, redCurrent, "r*-", LineWidth=1)
+% plot(z, yellowCurrent, Marker="*", Color="#EDB120", LineWidth=1)
+% plot(z, greenCurrent, "g*-", LineWidth=1)
+% plot(z, visibleCurrent, "b*-", LineWidth=1)
+% plot(z, IRLEDCurrent, "c*-", LineWidth=1)
+% plot(z, IRPhotoCurrent, "m*-", LineWidth=1)
+% hold off
+% xlabel("Depth [m]", FontSize=16);
+% ylabel("Current [A]", FontSize=16);
+% title("Current vs Depth", FontSize=20);
+% % legend("Red LED Current", "Yellow LED Current", "Green LED Current", ...
+% %     "Visible Photodiode Current", "IR LED Current", "IR Photodiode Current", ...
+% %     fontsize=12);
+% axis tight
+% 
+% %% Normalize currents
+% IRPhotoCurrentNorm = IRPhotoCurrent/max(IRPhotoCurrent);
+% yellowCurrentNorm = yellowCurrent/max(yellowCurrent);
+% greenCurrentNorm = greenCurrent/max(greenCurrent);
+% visibleCurrentNorm = visibleCurrent/max(visibleCurrent);
+% IRLEDCurrentNorm = IRLEDCurrent/max(IRLEDCurrent);
+% redCurrentNorm = redCurrent/max(redCurrent);
+% 
+% %% Plot normalized currents
+% subplot(3,1,3);
+% hold on
+% plot(z, redCurrentNorm, "r*-", LineWidth=1)
+% plot(z, yellowCurrentNorm, Marker="*", Color="#EDB120", LineWidth=1)
+% plot(z, greenCurrentNorm, "g*-", LineWidth=1)
+% plot(z, visibleCurrentNorm, "b*-", LineWidth=1)
+% plot(z, IRLEDCurrentNorm, "c*-", LineWidth=1)
+% plot(z, IRPhotoCurrentNorm, "m*-", LineWidth=1)
+% hold off
+% xlabel("Depth [m]", FontSize=16);
+% ylabel("Normalized Current Relative to Max", FontSize=16);
+% title("Normalized Current vs Depth", FontSize=20);
 legend("Red LED Current", "Yellow LED Current", "Green LED Current", ...
     "Visible Photodiode Current", "IR LED Current", "IR Photodiode Current", ...
     'Position',[0.836049968900604 0.857068811310621 0.145490196078431 0.12002567394095], fontsize=12);
 axis tight
-
-
+% 
+% 

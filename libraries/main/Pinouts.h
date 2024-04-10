@@ -43,10 +43,10 @@
 
 // Light sensors
 #define IR_PHOTODIODE 14 // Teensy pin A00
+#define YELLOW_LED 16 // Teensy pin A02
+#define GREEN_LED 17 // Teensy pin A03
 #define VISIBLE_PHOTODIODE 24 // Teensy pin A10
 #define IR_LED 25 // Teensy pin A11
 #define RED_LED 26 // Teensy pin A12
-#define YELLOW_LED 16 // Teensy pin A02
-#define GREEN_LED 17 // Teensy pin A03
 
 #endif
