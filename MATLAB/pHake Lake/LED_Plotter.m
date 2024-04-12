@@ -4,12 +4,12 @@ figure(1)
 clf
 
 %% Resistor Values
-IRPhotoResistance = 300;
-yellowResistance = 400;
-greenResistance = 700;
-visibleResistance = 1000;
-IRLEDResistance = 800;
-redResistance = 500;
+IRPhotoResistance = 8.7e3;
+yellowResistance = 3.15e6;
+greenResistance = 2.8e6;
+visibleResistance = 1.43e3;
+IRLEDResistance = 1.25e6;
+redResistance = 11.75e6;
 
 %% Setup
 filenum = '008'; % file number for the data you want to read
