@@ -1,7 +1,7 @@
 %#ok<*NOPTS>
 % voltage and depth data
-voltage = [2.65, 2.63, 2.61, 2.6, 2.58, 2.56, 2.55, 2.53, 2.51];
-depth = 0:0.05:0.4;
+voltage = [2.64, 2.62, 2.60, 2.59, 2.57, 2.56, 2.54, 2.52];
+depth = 0:0.05:0.35;
 
 
 confLev = 0.95; % The confidence level

@@ -114,7 +114,7 @@ void loop() {
     printer.printValue(2,logger.printState());
     printer.printValue(3,gps.printState());   
     printer.printValue(4,xy_state_estimator.printState());  
-    printer.printValue(5,z_state_estimator.printState());      printer.printValue(5,depth_control.printWaypointUpdate());
+    printer.printValue(5,z_state_estimator.printState());
     printer.printValue(6,depth_control.printString());
     printer.printValue(7,motor_driver.printState());
     printer.printValue(8,imu.printRollPitchHeading());        
