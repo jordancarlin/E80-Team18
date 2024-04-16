@@ -26,7 +26,6 @@ Authors:
 #include <Printer.h>
 #include <DepthControl.h>
 #define UartSerial Serial1
-#define DELAY 5000 // ms
 #include <GPSLockLED.h>
 #include <BurstADCSampler.h>
 
@@ -78,9 +77,10 @@ void setup() {
   motor_driver.init();
   led.init();
 
-  const int num_depth_waypoints = 6;
-  double depth_waypoints [] = { 0.25, 0.5, 0.75, 1, 1.5, 2};  // listed as z0,z1,... etc.
-  depth_control.init(num_depth_waypoints, depth_waypoints, DELAY);
+  const int num_depth_waypoints = 1;
+  const int depth_delay = 5000; // ms
+  double depth_waypoints [] = { 1 };  // listed as z0,z1,... etc.
+  depth_control.init(num_depth_waypoints, depth_waypoints, depth_delay);
   
   xy_state_estimator.init(); 
   z_state_estimator.init();
@@ -133,7 +133,7 @@ void loop() {
         depth_control.diveState = false; 
         depth_control.surfaceState = true;
       }
-      motor_driver.drive(0,0,depth_control.uV);
+      motor_driver.drive(0,depth_control.uV,depth_control.uV);
     }
     if ( depth_control.surfaceState ) {     // SURFACE STATE //
       if ( !depth_control.atSurface ) { 
@@ -142,7 +142,7 @@ void loop() {
       else if ( depth_control.complete ) { 
         delete[] depth_control.wayPoints;   // destroy depth waypoint array from the Heap
       }
-      motor_driver.drive(0,0,depth_control.uV);
+      motor_driver.drive(0,depth_control.uV,depth_control.uV);
     }
   }
 
