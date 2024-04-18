@@ -35,7 +35,7 @@ public:
 
 private:
   const float depthCal_slope = -3.0263;
-  const float depthCal_intercept = 7.9829;
+  const float depthCal_intercept = 7.9829 - 0.159;
 
 };
 
