@@ -102,11 +102,11 @@ redVoltage = cast(A12, "double")*(3.3/1023);
 %% Plot voltages
 % subplot(3,1,1);
 hold on
-% plot(z, redVoltage, "r*")
-% plot(z, yellowVoltage, "*", Color="#EDB120")
-% plot(z, greenVoltage, "g*")
-% plot(z, visibleVoltage, "b*")
-% plot(z, IRLEDVoltage, "c*")
+plot(z, redVoltage, "r*")
+plot(z, yellowVoltage, "*", Color="#EDB120")
+plot(z, greenVoltage, "g*")
+plot(z, visibleVoltage, "b*")
+plot(z, IRLEDVoltage, "c*")
 plot(z, IRPhotoVoltage, "m*")
 hold off
 xlabel("Depth [m]", FontSize=16);
