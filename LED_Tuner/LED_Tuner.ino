@@ -54,7 +54,6 @@ volatile bool EF_States[NUM_FLAGS] = {1,1,1};
 ////////////////////////* Setup *////////////////////////////////
 
 void setup() {
-  delay(90000);
   logger.include(&imu);
   logger.include(&gps);
   logger.include(&xy_state_estimator);
@@ -77,10 +76,10 @@ void setup() {
   motor_driver.init();
   led.init();
 
-  const int num_depth_waypoints = 3;
-  const int depth_delay = 10000; // ms
-  double depth_waypoints [] = { 0.2, 0.5, 1};  // listed as z0,z1,... etc.
-  depth_control.init(num_depth_waypoints, depth_waypoints, depth_delay);
+  // const int num_depth_waypoints = 11;
+  // const int depth_delay = 10000; // ms
+  // double depth_waypoints [] = { 0.2, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5};  // listed as z0,z1,... etc.
+  // depth_control.init(num_depth_waypoints, depth_waypoints, depth_delay);
   
   xy_state_estimator.init(); 
   z_state_estimator.init();
@@ -95,7 +94,7 @@ void setup() {
   button_sampler.lastExecutionTime     = loopStartTime - LOOP_PERIOD + BUTTON_LOOP_OFFSET;
   xy_state_estimator.lastExecutionTime = loopStartTime - LOOP_PERIOD + XY_STATE_ESTIMATOR_LOOP_OFFSET;
   z_state_estimator.lastExecutionTime  = loopStartTime - LOOP_PERIOD + Z_STATE_ESTIMATOR_LOOP_OFFSET;
-  depth_control.lastExecutionTime      = loopStartTime - LOOP_PERIOD + DEPTH_CONTROL_LOOP_OFFSET;
+  // depth_control.lastExecutionTime      = loopStartTime - LOOP_PERIOD + DEPTH_CONTROL_LOOP_OFFSET;
   logger.lastExecutionTime             = loopStartTime - LOOP_PERIOD + LOGGER_LOOP_OFFSET;
   burst_adc.lastExecutionTime          = loopStartTime;
 }
@@ -116,36 +115,36 @@ void loop() {
     printer.printValue(4,gps.printState());   
     printer.printValue(5,xy_state_estimator.printState());  
     printer.printValue(6,z_state_estimator.printState());
-    printer.printValue(7,depth_control.printString());
-    printer.printValue(8,motor_driver.printState());
-    printer.printValue(9,imu.printRollPitchHeading());        
-    printer.printValue(10,imu.printAccels());
+    // printer.printValue(7,depth_control.printString());
+    // printer.printValue(8,motor_driver.printState());
+    // printer.printValue(9,imu.printRollPitchHeading());        
+    // printer.printValue(10,imu.printAccels());
     printer.printToSerial();  // To stop printing, just comment this line out
   }
 
-  if ( currentTime-depth_control.lastExecutionTime > LOOP_PERIOD ) {
-    depth_control.lastExecutionTime = currentTime;
-    if ( depth_control.diveState ) {      // DIVE STATE //
-      depth_control.complete = false;
-      if ( !depth_control.atDepth ) {
-        depth_control.dive(&z_state_estimator.state, currentTime);
-      }
-      else {
-        depth_control.diveState = false; 
-        depth_control.surfaceState = true;
-      }
-      motor_driver.drive(0,depth_control.uV,depth_control.uV);
-    }
-    if ( depth_control.surfaceState ) {     // SURFACE STATE //
-      if ( !depth_control.atSurface ) { 
-        depth_control.surface(&z_state_estimator.state);
-      }
-      else if ( depth_control.complete ) { 
-        delete[] depth_control.wayPoints;   // destroy depth waypoint array from the Heap
-      }
-      motor_driver.drive(0,depth_control.uV,depth_control.uV);
-    }
-  }
+  // if ( currentTime-depth_control.lastExecutionTime > LOOP_PERIOD ) {
+  //   depth_control.lastExecutionTime = currentTime;
+  //   if ( depth_control.diveState ) {      // DIVE STATE //
+  //     depth_control.complete = false;
+  //     if ( !depth_control.atDepth ) {
+  //       depth_control.dive(&z_state_estimator.state, currentTime);
+  //     }
+  //     else {
+  //       depth_control.diveState = false; 
+  //       depth_control.surfaceState = true;
+  //     }
+  //     motor_driver.drive(0,depth_control.uV,depth_control.uV);
+  //   }
+  //   if ( depth_control.surfaceState ) {     // SURFACE STATE //
+  //     if ( !depth_control.atSurface ) { 
+  //       depth_control.surface(&z_state_estimator.state);
+  //     }
+  //     else if ( depth_control.complete ) { 
+  //       delete[] depth_control.wayPoints;   // destroy depth waypoint array from the Heap
+  //     }
+  //     motor_driver.drive(0,depth_control.uV,depth_control.uV);
+  //   }
+  // }
 
   if ( currentTime-adc.lastExecutionTime > LOOP_PERIOD ) {
     adc.lastExecutionTime = currentTime;
