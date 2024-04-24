@@ -1,18 +1,20 @@
 % LED_Plotter.m
+% for files 002 and 003
+
 clear all;
 figure(1)
 clf
 
 %% Resistor Values
-IRPhotoResistance = 185.6e3;
-yellowResistance = 2.225e6;
-greenResistance = 1.61e6;
-visibleResistance = 1.431e3;
-IRLEDResistance = 10.03e3;
-redResistance = 218.5e4;
+IRPhotoResistance = 5.2694e6;
+yellowResistance = 21.6325e6;
+greenResistance = 4.544e6;
+visibleResistance = 2.908e3;
+IRLEDResistance = 15.092e3;
+redResistance = 26.08e6;
 
 %% Setup
-filenum = '033'; % file number for the data you want to read
+filenum = '001'; % file number for the data you want to read
 infofile = strcat('INF', filenum, '.TXT');
 datafile = strcat('LOG', filenum, '.BIN');
 
@@ -91,13 +93,6 @@ fclose(fid);
 %     end
 % end
 
-A00(A00 == 0) = NaN;
-A02(A02 == 0) = NaN;
-A03(A03 == 0) = NaN;
-A10(A10 == 0) = NaN;
-A11(A11 == 0) = NaN;
-A12(A12 == 0) = NaN;
-
 %% Convert data to voltages
 IRPhotoVoltage = cast(A00, "double")*(3.3/1023);
 yellowVoltage = cast(A02, "double")*(3.3/1023);
@@ -105,6 +100,8 @@ greenVoltage = cast(A03, "double")*(3.3/1023);
 visibleVoltage = cast(A10, "double")*(3.3/1023);
 IRLEDVoltage = cast(A11, "double")*(3.3/1023);
 redVoltage = cast(A12, "double")*(3.3/1023);
+
+% z = [1:1:length(z)]';
 
 %% Plot voltages
 subplot(3,1,1);
@@ -123,6 +120,7 @@ title("Voltage vs Depth", FontSize=20);
 %     "Visible Photodiode Voltage", "IR LED Voltage", "IR Photodiode Voltage", ...
 %     fontsize=12);
 axis tight
+xlim([0 1.5]);
 
 %% Convert voltages to currents
 IRPhotoCurrent = IRPhotoVoltage/IRPhotoResistance;
@@ -149,6 +147,7 @@ title("Current vs Depth", FontSize=20);
 %     "Visible Photodiode Current", "IR LED Current", "IR Photodiode Current", ...
 %     fontsize=12);
 axis tight
+xlim([0 1.5]);
 
 %% Normalize currents
 IRPhotoCurrentNorm = IRPhotoCurrent/max(IRPhotoCurrent);
@@ -175,5 +174,4 @@ legend("Red LED Current", "Yellow LED Current", "Green LED Current", ...
     "Visible Photodiode Current", "IR LED Current", "IR Photodiode Current", ...
     'Position',[0.836049968900604 0.857068811310621 0.145490196078431 0.12002567394095], fontsize=12);
 axis tight
-
-
+xlim([0 1.5]);
