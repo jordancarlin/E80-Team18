@@ -14,7 +14,7 @@ IRLEDResistance = 15.092e3;
 redResistance = 26.08e6;
 
 %% Setup
-filenum = '001'; % file number for the data you want to read
+filenum = '003'; % file number for the data you want to read
 infofile = strcat('INF', filenum, '.TXT');
 datafile = strcat('LOG', filenum, '.BIN');
 
@@ -101,7 +101,83 @@ visibleVoltage = cast(A10, "double")*(3.3/1023);
 IRLEDVoltage = cast(A11, "double")*(3.3/1023);
 redVoltage = cast(A12, "double")*(3.3/1023);
 
-% z = [1:1:length(z)]';
+%% Only get data after deployemnt start
+% Imin = find(z >= 0, 1, 'first');
+% z = z(Imin:end);
+% IRPhotoVoltage = IRPhotoVoltage(Imin:end);
+% yellowVoltage = yellowVoltage(Imin:end);
+% greenVoltage = greenVoltage(Imin:end);
+% visibleVoltage = visibleVoltage(Imin:end);
+% IRLEDVoltage = IRLEDVoltage(Imin:end);
+% redVoltage = redVoltage(Imin:end);
+
+%% Only get data on the way down
+[M, Imax] = max(z);
+Imin = find(z >= 0, 1, 'first');
+z = z(Imin:Imax);
+IRPhotoVoltage = IRPhotoVoltage(Imin:Imax);
+yellowVoltage = yellowVoltage(Imin:Imax);
+greenVoltage = greenVoltage(Imin:Imax);
+visibleVoltage = visibleVoltage(Imin:Imax);
+IRLEDVoltage = IRLEDVoltage(Imin:Imax);
+redVoltage = redVoltage(Imin:Imax);
+
+%% Filter to only one point per depth
+newZ = [];
+newIRPhotoVoltage = [];
+newYellowVoltage = [];
+newGreenVoltage = [];
+newVisibleVoltage = [];
+newIRLEDVoltage = [];
+newRedVoltage = [];
+
+for i=1:length(z)
+    if not(ismembertol(z(i), newZ, 0.00000))
+        newZ(end+1) = z(i);
+        newIRPhotoVoltage(end+1) = IRPhotoVoltage(i);
+        newYellowVoltage(end+1) = yellowVoltage(i);
+        newGreenVoltage(end+1) = greenVoltage(i);
+        newVisibleVoltage(end+1) = visibleVoltage(i);
+        newIRLEDVoltage(end+1) = IRLEDVoltage(i);
+        newRedVoltage(end+1) = redVoltage(i);
+    else
+        j = find(newZ == z(i));
+        if newIRPhotoVoltage(j) < IRPhotoVoltage(i)
+            newIRPhotoVoltage(j) = IRPhotoVoltage(i);
+        end
+        if newYellowVoltage(j) < yellowVoltage(i)
+            newYellowVoltage(j) = yellowVoltage(i);
+        end
+        if newGreenVoltage(j) < greenVoltage(i)
+            newGreenVoltage(j) = greenVoltage(i);
+        end
+        if newVisibleVoltage(j) < visibleVoltage(i)
+            newVisibleVoltage(j) = visibleVoltage(i);
+        end
+        if newIRLEDVoltage(j) < IRLEDVoltage(i)
+            newIRLEDVoltage(j) = IRLEDVoltage(i);
+        end
+        if newRedVoltage(j) < redVoltage(i)
+            newRedVoltage(j) = redVoltage(i);
+        end
+    end
+end
+
+z=newZ;
+IRPhotoVoltage = newIRPhotoVoltage;
+yellowVoltage = newYellowVoltage;
+greenVoltage = newGreenVoltage;
+visibleVoltage = newVisibleVoltage;
+IRLEDVoltage = newIRLEDVoltage;
+redVoltage = newRedVoltage;
+
+%% Apply moving average
+IRPhotoVoltage = movmean(IRPhotoVoltage, 5);
+yellowVoltage = movmean(yellowVoltage, 5);
+greenVoltage = movmean(greenVoltage, 5);
+visibleVoltage = movmean(visibleVoltage, 5);
+IRLEDVoltage = movmean(IRLEDVoltage, 5);
+redVoltage = movmean(redVoltage, 5);
 
 %% Plot voltages
 subplot(3,1,1);
@@ -120,7 +196,6 @@ title("Voltage vs Depth", FontSize=20);
 %     "Visible Photodiode Voltage", "IR LED Voltage", "IR Photodiode Voltage", ...
 %     fontsize=12);
 axis tight
-xlim([0 1.5]);
 
 %% Convert voltages to currents
 IRPhotoCurrent = IRPhotoVoltage/IRPhotoResistance;
@@ -147,7 +222,6 @@ title("Current vs Depth", FontSize=20);
 %     "Visible Photodiode Current", "IR LED Current", "IR Photodiode Current", ...
 %     fontsize=12);
 axis tight
-xlim([0 1.5]);
 
 %% Normalize currents
 IRPhotoCurrentNorm = IRPhotoCurrent/max(IRPhotoCurrent);
@@ -170,8 +244,10 @@ hold off
 xlabel("Depth [m]", FontSize=16);
 ylabel("Normalized Current Relative to Max", FontSize=16);
 title("Normalized Current vs Depth", FontSize=20);
-legend("Red LED Current", "Yellow LED Current", "Green LED Current", ...
-    "Visible Photodiode Current", "IR LED Current", "IR Photodiode Current", ...
+
+legend("Red LED", "Yellow LED", "Green LED", ...
+    "Visible Photodiode", "IR LED", "IR Photodiode", ...
     'Position',[0.836049968900604 0.857068811310621 0.145490196078431 0.12002567394095], fontsize=12);
 axis tight
-xlim([0 1.5]);
+
+
