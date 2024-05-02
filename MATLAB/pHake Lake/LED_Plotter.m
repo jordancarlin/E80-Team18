@@ -1,10 +1,13 @@
 % LED_Plotter.m
+
+
 clear all;
 figure(3)
 clf
+fs = 18;
 
-green = "#77AC30";
-purple = "#6A44B1";
+LEDColor = "#77AC30";
+photoColor = "#6A44B1";
 
 %% Resistor Values
 IRPhotoResistance = 8.7e3;
@@ -96,179 +99,143 @@ fclose(fid);
 
 %% Convert data to voltages
 IRPhotoVoltage = cast(A00, "double")*(3.3/1023);
-yellowVoltage = cast(A02, "double")*(3.3/1023);
-greenVoltage = cast(A03, "double")*(3.3/1023);
-visibleVoltage = cast(A10, "double")*(3.3/1023);
 IRLEDVoltage = cast(A11, "double")*(3.3/1023);
-redVoltage = cast(A12, "double")*(3.3/1023);
 
 %% Only get data on the way down
 [M, Imax] = max(z);
 Imin = find(z >= 0, 1, 'first');
 z = z(Imin:Imax);
 IRPhotoVoltage = IRPhotoVoltage(Imin:Imax);
-yellowVoltage = yellowVoltage(Imin:Imax);
-greenVoltage = greenVoltage(Imin:Imax);
-visibleVoltage = visibleVoltage(Imin:Imax);
 IRLEDVoltage = IRLEDVoltage(Imin:Imax);
-redVoltage = redVoltage(Imin:Imax);
-
-
-%% Filter 0s
-% IRPhotoVoltage(IRPhotoVoltage <= 0.0000) = NaN;
-% yellowVoltage(yellowVoltage <= 0.0000) = NaN;
-% greenVoltage(greenVoltage <= 0.0000) = NaN;
-% visibleVoltage(visibleVoltage <= 0.0000) = NaN;
-% IRLEDVoltage(IRLEDVoltage <= 0.0000) = NaN;
-% redVoltage(redVoltage <= 0.0000) = NaN;
 
 %% Filter to only one point per depth
 newZ = [];
 newIRPhotoVoltage = [];
-newYellowVoltage = [];
-newGreenVoltage = [];
-newVisibleVoltage = [];
 newIRLEDVoltage = [];
-newRedVoltage = [];
 
 for i=1:length(z)
     if not(ismembertol(z(i), newZ, 0.00000))
         newZ(end+1) = z(i);
         newIRPhotoVoltage(end+1) = IRPhotoVoltage(i);
-        newYellowVoltage(end+1) = yellowVoltage(i);
-        newGreenVoltage(end+1) = greenVoltage(i);
-        newVisibleVoltage(end+1) = visibleVoltage(i);
         newIRLEDVoltage(end+1) = IRLEDVoltage(i);
-        newRedVoltage(end+1) = redVoltage(i);
     else
         j = find(newZ == z(i));
         if newIRPhotoVoltage(j) < IRPhotoVoltage(i)
             newIRPhotoVoltage(j) = IRPhotoVoltage(i);
         end
-        if newYellowVoltage(j) < yellowVoltage(i)
-            newYellowVoltage(j) = yellowVoltage(i);
-        end
-        if newGreenVoltage(j) < greenVoltage(i)
-            newGreenVoltage(j) = greenVoltage(i);
-        end
-        if newVisibleVoltage(j) < visibleVoltage(i)
-            newVisibleVoltage(j) = visibleVoltage(i);
-        end
         if newIRLEDVoltage(j) < IRLEDVoltage(i)
             newIRLEDVoltage(j) = IRLEDVoltage(i);
-        end
-        if newRedVoltage(j) < redVoltage(i)
-            newRedVoltage(j) = redVoltage(i);
         end
     end
 end
 
 z=newZ;
 IRPhotoVoltage = newIRPhotoVoltage;
-yellowVoltage = newYellowVoltage;
-greenVoltage = newGreenVoltage;
-visibleVoltage = newVisibleVoltage;
 IRLEDVoltage = newIRLEDVoltage;
-redVoltage = newRedVoltage;
 
 %% Apply moving average
 IRPhotoVoltage = movmean(IRPhotoVoltage, 5);
-yellowVoltage = movmean(yellowVoltage, 5);
-greenVoltage = movmean(greenVoltage, 5);
-visibleVoltage = movmean(visibleVoltage, 5);
 IRLEDVoltage = movmean(IRLEDVoltage, 5);
-redVoltage = movmean(redVoltage, 5);
 
 %% Stop when current reaches zero
-IRPhotoVoltage = IRPhotoVoltage(1:find(IRPhotoVoltage <= 0.0001, 1, "first"));
-yellowVoltage = yellowVoltage(1:find(yellowVoltage <= 0.0001, 1, "first"));
-greenVoltage = greenVoltage(1:find(greenVoltage <= 0.0001, 1, "first"));
-visibleVoltage = visibleVoltage(1:find(visibleVoltage <= 0.0001, 1, "first"));
-% IRLEDVoltage = IRLEDVoltage(1:find(IRLEDVoltage <= 0.0001, 1, "first"));
-redVoltage = redVoltage(1:find(redVoltage <= 0.0001, 1, "first"));
+IRPhotoVoltage = IRPhotoVoltage(1:find(IRPhotoVoltage <= 0.001, 1, "first"));
+% IRLEDVoltage = IRLEDVoltage(1:find(IRLEDVoltage <= 0.001, 1, "first"));
 
 %% Convert voltages to currents
-IRPhotoCurrent = IRPhotoVoltage/IRPhotoResistance;
-yellowCurrent = yellowVoltage/yellowResistance;
-greenCurrent = greenVoltage/greenResistance;
-visibleCurrent = visibleVoltage/visibleResistance;
-IRLEDCurrent = IRLEDVoltage/IRLEDResistance;
-redCurrent = redVoltage/redResistance;
+IRPhotoCurrent = (IRPhotoVoltage/IRPhotoResistance)*10^6;
+IRLEDCurrent = (IRLEDVoltage/IRLEDResistance)*10^6;
 
 %% Normalize currents
 IRPhotoCurrentNorm = IRPhotoCurrent/max(IRPhotoCurrent);
-yellowCurrentNorm = yellowCurrent/max(yellowCurrent);
-greenCurrentNorm = greenCurrent/max(greenCurrent);
-visibleCurrentNorm = visibleCurrent/max(visibleCurrent);
 IRLEDCurrentNorm = IRLEDCurrent/max(IRLEDCurrent);
-redCurrentNorm = redCurrent/max(redCurrent);
 
-% plot(IRPhotoCurrent, IRLEDCurrent, "*")
+ah1 = gca;
 
-%% Plot voltages
-subplot(3, 2, 1);
-% plot(z, redVoltage, "r*")
-% plot(z, yellowVoltage, "*", Color="#EDB120")
-% plot(z, greenVoltage, "g*")
-% plot(z, visibleVoltage, "b*")
-regPlot(z(1:length(IRLEDVoltage)), IRLEDVoltage, green)
-xlabel("Depth [m]", FontSize=16);
-ylabel("Voltage [V]", FontSize=16);
-title("Voltage vs Depth", FontSize=20);
-xlim([0 1.5])
-
-subplot(3, 2, 2)
-regPlot(z(1:length(IRPhotoVoltage)), IRPhotoVoltage, purple)
-hold off
-xlabel("Depth [m]", FontSize=16);
-ylabel("Voltage [V]", FontSize=16);
-title("Voltage vs Depth", FontSize=20);
-% legend("Red LED Voltage", "Yellow LED Voltage", "Green LED Voltage", ...
-%     "Visible Photodiode Voltage", "IR LED Voltage", "IR Photodiode Voltage", ...
-%     fontsize=12);
+IRPhotoIrradiance = (1/12.5)*IRPhotoCurrent;
+minLen = max(length(IRPhotoIrradiance), length(IRPhotoCurrent));
+regPlot(IRLEDCurrent(1:minLen), IRPhotoIrradiance(1:minLen), LEDColor)
+xlabel("IR LED Current [µA]")
+ylabel("IR Irradiance [mW/cm^2]")
+title("Irradiance vs Current for IR LED")
 axis tight
 
+ah1.LineWidth = 1.5;
+ah1.FontSize = fs;
+ah1.TitleFontSizeMultiplier = 0.9;
 
-%% Plot currents
-subplot(3,2,3);
-% plot(z, redCurrent, "r*")
-% plot(z, yellowCurrent, "*", Color="#EDB120")
-% plot(z, greenCurrent, "g*")
-% plot(z, visibleCurrent, "b*")
-regPlot(z(1:length(IRLEDCurrent)), IRLEDCurrent, green)
-xlabel("Depth [m]", FontSize=16);
-ylabel("Current [A]", FontSize=16);
-title("Current vs Depth", FontSize=20);
+print('pHake Lake IR LED Irradiance.png', "-dpng")
 
-subplot(3,2,4);
-regPlot(z(1:length(IRPhotoCurrent)), IRPhotoCurrent, purple)
-xlabel("Depth [m]", FontSize=16);
-ylabel("Current [A]", FontSize=16);
-title("Current vs Depth", FontSize=20);
-% legend("Red LED Current", "Yellow LED Current", "Green LED Current", ...
-%     "Visible Photodiode Current", "IR LED Current", "IR Photodiode Current", ...
-%     fontsize=12);
-axis tight
+IRLEDIrradiance = 0.0011*IRLEDCurrent + 0.0048;
 
 
-%% Plot normalized currents
-subplot(3,2,5:6);
-hold on
-% plot(z, redCurrentNorm, "r*")
-% plot(z, yellowCurrentNorm, "*", Color="#EDB120")
-% plot(z, greenCurrentNorm, "g*")
-% plot(z, visibleCurrentNorm, "b*")
-regOnlyPlot(z(1:length(IRLEDCurrentNorm)), IRLEDCurrentNorm, green)
-hold on
-regOnlyPlot(z(1:length(IRPhotoCurrentNorm)), IRPhotoCurrentNorm, purple)
-hold off
-xlabel("Depth [m]", FontSize=16);
-ylabel("Normalized Current Relative to Max", FontSize=16);
-title("Normalized Current vs Depth", FontSize=20);
 
-legend("IR LED", "IR Photodiode", ...
-    'Position',[0.836049968900604 0.857068811310621 0.145490196078431 0.12002567394095], fontsize=12);
-axis tight
+
+% % plot(IRPhotoCurrent, IRLEDCurrent, "*")
+
+% %% Plot voltages
+% subplot(3, 2, 1);
+% % plot(z, redVoltage, "r*")
+% % plot(z, yellowVoltage, "*", Color="#EDB120")
+% % plot(z, greenVoltage, "g*")
+% % plot(z, visibleVoltage, "b*")
+% regPlot(z(1:length(IRLEDVoltage)), IRLEDVoltage, green)
+% xlabel("Depth [m]", FontSize=16);
+% ylabel("Voltage [V]", FontSize=16);
+% title("Voltage vs Depth", FontSize=20);
+% xlim([0 1.5])
+
+% subplot(3, 2, 2)
+% regPlot(z(1:length(IRPhotoVoltage)), IRPhotoVoltage, purple)
+% hold off
+% xlabel("Depth [m]", FontSize=16);
+% ylabel("Voltage [V]", FontSize=16);
+% title("Voltage vs Depth", FontSize=20);
+% % legend("Red LED Voltage", "Yellow LED Voltage", "Green LED Voltage", ...
+% %     "Visible Photodiode Voltage", "IR LED Voltage", "IR Photodiode Voltage", ...
+% %     fontsize=12);
+% axis tight
+
+
+% %% Plot currents
+% subplot(3,2,3);
+% % plot(z, redCurrent, "r*")
+% % plot(z, yellowCurrent, "*", Color="#EDB120")
+% % plot(z, greenCurrent, "g*")
+% % plot(z, visibleCurrent, "b*")
+% regPlot(z(1:length(IRLEDCurrent)), IRLEDCurrent, green)
+% xlabel("Depth [m]", FontSize=16);
+% ylabel("Current [A]", FontSize=16);
+% title("Current vs Depth", FontSize=20);
+
+% subplot(3,2,4);
+% regPlot(z(1:length(IRPhotoCurrent)), IRPhotoCurrent, purple)
+% xlabel("Depth [m]", FontSize=16);
+% ylabel("Current [A]", FontSize=16);
+% title("Current vs Depth", FontSize=20);
+% % legend("Red LED Current", "Yellow LED Current", "Green LED Current", ...
+% %     "Visible Photodiode Current", "IR LED Current", "IR Photodiode Current", ...
+% %     fontsize=12);
+% axis tight
+
+
+% %% Plot normalized currents
+% subplot(3,2,5:6);
+% hold on
+% % plot(z, redCurrentNorm, "r*")
+% % plot(z, yellowCurrentNorm, "*", Color="#EDB120")
+% % plot(z, greenCurrentNorm, "g*")
+% % plot(z, visibleCurrentNorm, "b*")
+% regOnlyPlot(z(1:length(IRLEDCurrentNorm)), IRLEDCurrentNorm, green)
+% hold on
+% regOnlyPlot(z(1:length(IRPhotoCurrentNorm)), IRPhotoCurrentNorm, purple)
+% hold off
+% xlabel("Depth [m]", FontSize=16);
+% ylabel("Normalized Current Relative to Max", FontSize=16);
+% title("Normalized Current vs Depth", FontSize=20);
+
+% legend("IR LED", "IR Photodiode", ...
+%     'Position',[0.836049968900604 0.857068811310621 0.145490196078431 0.12002567394095], fontsize=12);
+% axis tight
 
 
 function regPlot(x, y, color)
@@ -300,7 +267,7 @@ function regPlot(x, y, color)
     lambdayhat = StdT*Syhat;
     Sy = Se*sqrt(1+1/N + (xplot - xbar).*(xplot - xbar)/Sxx);
     lambday = StdT*Sy;
-    plot(x,y,"*", "Color", color)
+    scatter(x,y,"*", "Color", color)
     hold on
     plot(xplot,yplot)
     plot(xplot,yplot+lambdayhat,'-.b',xplot,yplot-lambdayhat,'-.b')

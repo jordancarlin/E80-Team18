@@ -49,6 +49,12 @@ legend('Data Points','Best Fit Line','Upper Func. Bound',...
     'Lower Func. Bound', 'Upper Obs. Bound', 'Lower Obs. Bound',...
     'Location', location)
 print("Pressure Calibration.png", "-dpng");
+title("Pressure Sensor Calibration Curve")
+ah = gca;
+ah.LineWidth = 1.5;
+ah.FontSize = 18;
+ah.TitleFontSizeMultiplier = 0.9;
+print('Pressure Sensor Calibration.png', "-dpng")
 hold off
 
 slope = beta1
